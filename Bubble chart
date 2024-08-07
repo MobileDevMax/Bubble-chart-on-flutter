@@ -1,0 +1,100 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Bubble chart',
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Bubble chart'),
+        ),
+        body: Center(
+          child: BubbleChart(
+            data: [
+              BubbleData(1, 1, 30, 'A'),
+              BubbleData(2, 3, 60, 'B'),
+              BubbleData(3, 2, 40, 'C'),
+              BubbleData(4, 4, 70, 'D'),
+              BubbleData(5, 1.5, 50, 'E'),
+            ],
+            maxX: 5,
+            maxY: 5,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class BubbleData {
+  final double x; // X coordinate
+  final double y; // Y coordinate
+  final double radius; // Bubble radius
+  final String label; // Label
+
+  BubbleData(this.x, this.y, this.radius, this.label);
+}
+
+class BubbleChart extends StatelessWidget {
+  final List<BubbleData> data;
+  final double maxX;
+  final double maxY;
+
+  BubbleChart({required this.data, required this.maxX, required this.maxY});
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      size: Size(300, 300),
+      painter: BubbleChartPainter(data: data, maxX: maxX, maxY: maxY),
+    );
+  }
+}
+
+class BubbleChartPainter extends CustomPainter {
+  final List<BubbleData> data;
+  final double maxX;
+  final double maxY;
+
+  BubbleChartPainter({required this.data, required this.maxX, required this.maxY});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    Paint bubblePaint = Paint()
+      ..color = Colors.blue.withOpacity(0.6)
+      ..style = PaintingStyle.fill;
+
+    Paint textPaint = Paint()
+      ..color = Colors.black
+      ..style = PaintingStyle.fill;
+
+    double width = size.width;
+    double height = size.height;
+
+    // Draw bubbles
+    for (var bubble in data) {
+      double normalizedX = (bubble.x / maxX) * width;
+      double normalizedY = height - (bubble.y / maxY) * height; // Invert the Y coordinate
+      double bubbleRadius = bubble.radius;
+
+      // Draw bubble
+      canvas.drawCircle(Offset(normalizedX, normalizedY), bubbleRadius, bubblePaint);
+
+      // Draw text (label) in the center of the bubble
+      TextSpan span = TextSpan(style: TextStyle(color: Colors.black, fontSize: 12), text: bubble.label);
+      TextPainter tp = TextPainter(text: span, textDirection: TextDirection.ltr);
+      tp.layout();
+      tp.paint(canvas, Offset(normalizedX - bubbleRadius / 4, normalizedY - bubbleRadius / 2)); // Center the text
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return false;
+  }
+}
